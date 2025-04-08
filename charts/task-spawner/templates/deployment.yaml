@@ -29,6 +29,11 @@ spec:
                 secretKeyRef:
                   name: task-spawner-secrets
                   key: ZENDESK_API_TOKEN
+            - name: ZENDESK_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: task-spawner-secrets
+                  key: ZENDESK_WEBHOOK_SECRET
             - name: TEAMWORK_DOMAIN
               valueFrom:
                 secretKeyRef:

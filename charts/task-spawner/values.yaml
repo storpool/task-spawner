@@ -21,6 +21,7 @@ ingress:
 secrets:
   zendeskSubdomain: ""
   zendeskApiToken: ""
+  zendeskWebhookSecret:
   teamworkDomain: ""
   teamworkApiToken: ""
   teamworkProjectId: ""
