@@ -10,7 +10,7 @@ def create_app(config):
 
     @app.route("/webhook", methods=["POST"])
     def webhook():
-        received_secret = request.headers.get("X-Zendesk-Webhook-Secret")
+        received_secret = request.headers.get("X-Webhook-Secret")
         client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
 
         if not received_secret:
