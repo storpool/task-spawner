@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticket-spawner-config
+data:
+  config.toml: |
+    [zendesk]
+    subdomain = "{{ .Values.config.zendeskSubdomain }}"
+
+    [teamwork]
+    domain = "{{ .Values.config.teamworkDomain }}"
+    project_id = "{{ .Values.config.teamworkProjectId }}"
+    task_list = "{{ .Values.config.teamworkTaskList }}"

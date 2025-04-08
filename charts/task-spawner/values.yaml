@@ -18,10 +18,13 @@ ingress:
   fqdn: task-spawner.example.com
   tlsSecretName: task-spawner-tls
 
-secrets:
+config:
   zendeskSubdomain: ""
-  zendeskApiToken: ""
-  zendeskWebhookSecret:
   teamworkDomain: ""
-  teamworkApiToken: ""
   teamworkProjectId: ""
+  teamworkTaskList: ""
+
+secrets:
+  zendeskApiToken: ""
+  teamworkApiToken: ""
+  webhookSecret: ""

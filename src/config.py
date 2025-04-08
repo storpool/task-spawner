@@ -3,25 +3,38 @@ import sys
 import argparse
 import logging
 
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    import tomli as tomllib  # Python <3.11
 
 def get_config():
     parser = argparse.ArgumentParser(description="Zendesk → Teamwork Sync Service")
 
-    parser.add_argument("--zendesk-subdomain", help="Zendesk subdomain")
+    parser.add_argument("--config-file", default="config.toml", help="Path to TOML config file")
     parser.add_argument("--zendesk-api-token", help="Zendesk API token")
-    parser.add_argument("--teamwork-domain", help="Teamwork domain")
     parser.add_argument("--teamwork-api-token", help="Teamwork API token")
-    parser.add_argument("--teamwork-project-id", help="Teamwork project ID")
     parser.add_argument("--webhook-secret", help="Secret to authenticate incoming webhooks")
 
     args, _ = parser.parse_known_args()
 
+    try:
+        with open(args.config_file, "rb") as f:
+            toml_data = tomllib.load(f)
+    except FileNotFoundError:
+        logging.critical(f"Configuration file not found: {args.config_file}")
+        sys.exit(1)
+    except Exception as e:
+        logging.critical(f"Error loading config file: {e}")
+        sys.exit(1)
+
     config = {
-        "ZENDESK_SUBDOMAIN": os.getenv("ZENDESK_SUBDOMAIN", args.zendesk_subdomain),
+        "ZENDESK_SUBDOMAIN": toml_data.get("zendesk", {}).get("subdomain"),
         "ZENDESK_API_TOKEN": os.getenv("ZENDESK_API_TOKEN", args.zendesk_api_token),
-        "TEAMWORK_DOMAIN": os.getenv("TEAMWORK_DOMAIN", args.teamwork_domain),
+        "TEAMWORK_DOMAIN": toml_data.get("teamwork", {}).get("domain"),
         "TEAMWORK_API_TOKEN": os.getenv("TEAMWORK_API_TOKEN", args.teamwork_api_token),
-        "TEAMWORK_PROJECT_ID": os.getenv("TEAMWORK_PROJECT_ID", args.teamwork_project_id),
+        "TEAMWORK_PROJECT_ID": toml_data.get("teamwork", {}).get("project_id"),
+        "TEAMWORK_TASK_LIST": toml_data.get("teamwork", {}).get("task_list"),
         "WEBHOOK_SECRET": os.getenv("ZENDESK_WEBHOOK_SECRET", args.webhook_secret),
     }
 
@@ -31,6 +44,7 @@ def get_config():
         "TEAMWORK_DOMAIN",
         "TEAMWORK_API_TOKEN",
         "TEAMWORK_PROJECT_ID",
+        "TEAMWORK_TASK_LIST",
         "WEBHOOK_SECRET"
     ]
 

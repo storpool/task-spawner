@@ -1,4 +1,5 @@
 import requests
+import logging
 
 def get_headers(config):
     return {
@@ -6,23 +7,33 @@ def get_headers(config):
         "Content-Type": "application/json"
     }
 
-def create_task(subject, ticket_number, teamwork_user_id, config):
-    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks.json"
-    task_name = f"[Ticket #{ticket_number}] {subject}"
+def validate_task_list_exists(config):
+    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasklists/{config['TEAMWORK_TASK_LIST']}.json"
+    response = requests.get(url, headers=get_headers(config))
 
-    data = {
+    if response.status_code == 404:
+        logging.critical(f"Teamwork task list {config['TEAMWORK_TASK_LIST']} not found")
+        raise RuntimeError("Invalid Teamwork task list ID")
+
+    response.raise_for_status()
+    logging.info(f"Validated Teamwork task list {config['TEAMWORK_TASK_LIST']} exists")
+
+def create_task(title, teamwork_user_id, config):
+    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasklists/{config['TEAMWORK_TASK_LIST']}/tasks.json"
+    payload = {
         "todo-item": {
-            "content": task_name,
-            "tasklist-id": config["TEAMWORK_TASK_LIST_ID"],
+            "content": title
         }
     }
 
     if teamwork_user_id:
-        data["todo-item"]["responsible-party-id"] = teamwork_user_id
+        payload["todo-item"]["responsible-party-id"] = teamwork_user_id
 
-    response = requests.post(url, json=data, headers=get_headers(config))
+    response = requests.post(url, json=payload, headers=get_headers(config))
     response.raise_for_status()
-    return response.json()["todo-item"]["id"]
+    task_id = response.json()["todo-item"]["id"]
+    logging.info(f"Created Teamwork task {task_id} in list {config['TEAMWORK_TASK_LIST']}")
+    return task_id
 
 def update_task_status(task_id, completed, config):
     url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks/{task_id}.json"

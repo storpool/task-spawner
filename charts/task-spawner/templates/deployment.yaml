@@ -16,36 +16,31 @@ spec:
         - name: task-spawner
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--config-file=/etc/ticket-spawner/config.toml"
           ports:
             - containerPort: 5000
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/ticket-spawner/
+              readOnly: true
           env:
-            - name: ZENDESK_SUBDOMAIN
-              valueFrom:
-                secretKeyRef:
-                  name: task-spawner-secrets
-                  key: ZENDESK_SUBDOMAIN
             - name: ZENDESK_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: task-spawner-secrets
+                  name: ticket-spawner-secrets
                   key: ZENDESK_API_TOKEN
-            - name: ZENDESK_WEBHOOK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: task-spawner-secrets
-                  key: ZENDESK_WEBHOOK_SECRET
-            - name: TEAMWORK_DOMAIN
-              valueFrom:
-                secretKeyRef:
-                  name: task-spawner-secrets
-                  key: TEAMWORK_DOMAIN
             - name: TEAMWORK_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: task-spawner-secrets
+                  name: ticket-spawner-secrets
                   key: TEAMWORK_API_TOKEN
-            - name: TEAMWORK_PROJECT_ID
+            - name: ZENDESK_WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: task-spawner-secrets
-                  key: TEAMWORK_PROJECT_ID
+                  name: ticket-spawner-secrets
+                  key: ZENDESK_WEBHOOK_SECRET
+      volumes:
+        - name: config-volume
+          configMap:
+            name: ticket-spawner-config
