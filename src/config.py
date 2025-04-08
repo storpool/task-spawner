@@ -12,6 +12,7 @@ def get_config():
     parser = argparse.ArgumentParser(description="Zendesk → Teamwork Sync Service")
 
     parser.add_argument("--config-file", default="config.toml", help="Path to TOML config file")
+    parser.add_argument("--zendesk-email", help="Zendesk user email (used with API token)")
     parser.add_argument("--zendesk-api-token", help="Zendesk API token")
     parser.add_argument("--teamwork-api-token", help="Teamwork API token")
     parser.add_argument("--webhook-secret", help="Secret to authenticate incoming webhooks")
@@ -30,6 +31,7 @@ def get_config():
 
     config = {
         "ZENDESK_SUBDOMAIN": toml_data.get("zendesk", {}).get("subdomain"),
+        "ZENDESK_EMAIL": os.getenv("ZENDESK_EMAIL", args.zendesk_email),
         "ZENDESK_API_TOKEN": os.getenv("ZENDESK_API_TOKEN", args.zendesk_api_token),
         "TEAMWORK_DOMAIN": toml_data.get("teamwork", {}).get("domain"),
         "TEAMWORK_API_TOKEN": os.getenv("TEAMWORK_API_TOKEN", args.teamwork_api_token),
@@ -40,6 +42,7 @@ def get_config():
 
     required_keys = [
         "ZENDESK_SUBDOMAIN",
+        "ZENDESK_EMAIL",
         "ZENDESK_API_TOKEN",
         "TEAMWORK_DOMAIN",
         "TEAMWORK_API_TOKEN",

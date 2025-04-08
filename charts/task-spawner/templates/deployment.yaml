@@ -25,6 +25,11 @@ spec:
               mountPath: /etc/ticket-spawner/
               readOnly: true
           env:
+            - name: ZENDESK_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: ZENDESK_EMAIL
             - name: ZENDESK_API_TOKEN
               valueFrom:
                 secretKeyRef:

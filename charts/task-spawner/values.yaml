@@ -25,6 +25,7 @@ config:
   teamworkTaskList: ""
 
 secrets:
+  zendeskEmail: ""
   zendeskApiToken: ""
   teamworkApiToken: ""
   webhookSecret: ""

@@ -1,62 +1,43 @@
 # Zendesk to Teamwork Synchronization Service
 
-This application listens for Zendesk ticket events and synchronizes them with Teamwork tasks. All mapping and state are stored using Zendesk metadata. Redis is no longer used.
+This is a Python Flask application that listens to Zendesk ticket events and synchronizes them with Teamwork tasks. It is built for Kubernetes and deployed via Helm. Configuration is split between a generated `config.toml` file and secrets stored in Kubernetes Secrets.
 
 ## Features
 
-- **Task Creation**: Creates a Teamwork task when a new Zendesk ticket is created and contains the `teamwork_task` tag.
-- **Task Title**: Tasks are named using the pattern `[Ticket #1234] ticket title`.
-- **Assignee Mapping**: Tasks are assigned to the Teamwork user based on the Zendesk agent’s `teamwork_user_id` custom field.
-- **Task List**: Tasks are created in a configured Teamwork task list.
-- **Tag-based Sync**:
-  - If the `teamwork_task` tag is removed, task updates are paused.
-  - If the tag is re-added and the user has a `teamwork_user_id`, sync resumes.
-- **Status Sync**:
-  - `solved` → mark task complete
-  - `reopened` / `open` → mark task incomplete
-  - `closed` / `deleted` → delete the task
-  - `merged` → mark task complete and append `Merged into ticket #number` to the description
-- **Agent Mapping**: The application automatically maps Zendesk agents to Teamwork users by matching email addresses and writes the Teamwork user ID into the agent’s `teamwork_user_id` custom field.
-- **Metadata Storage**:
-  - Task ID is stored in `teamwork_task_id` custom field on the ticket.
-  - All required Zendesk custom fields are created automatically.
+- Creates a Teamwork task when a Zendesk ticket is created
+- Assigns the task to the Zendesk agent if a valid mapping exists
+- Updates task title and assignee on ticket updates
+- Synchronizes ticket lifecycle to task status:
+  - Solved → complete task
+  - Reopened → mark task incomplete
+  - Closed or deleted → delete task
+  - Merged → mark task complete
+- Validates the Teamwork task list at startup
+- Webhook secured using a secret header
+- All Zendesk API interactions use **Basic Auth with API token**
 
-## Configuration
+---
 
-The app is configured via command-line arguments or environment variables.
+## Configuration Overview
 
-| Description              | CLI Argument                     | Env Var                     | Required |
-|--------------------------|----------------------------------|-----------------------------|----------|
-| Zendesk subdomain        | `--zendesk-subdomain`            | `ZENDESK_SUBDOMAIN`         | ✅       |
-| Zendesk API token        | `--zendesk-api-token`            | `ZENDESK_API_TOKEN`         | ✅       |
-| Teamwork domain          | `--teamwork-domain`              | `TEAMWORK_DOMAIN`           | ✅       |
-| Teamwork API token       | `--teamwork-api-token`           | `TEAMWORK_API_TOKEN`        | ✅       |
-| Teamwork project ID      | `--teamwork-project-id`          | `TEAMWORK_PROJECT_ID`       | ✅       |
-| Teamwork task list ID    | `--teamwork-task-list-id`        | `TEAMWORK_TASK_LIST_ID`     | ✅       |
+### Configuration is split into:
 
-## How It Works
+1. A `config.toml` file rendered from Helm values:
+    - Includes non-sensitive values like domains and IDs
+2. A Kubernetes Secret:
+    - Stores API tokens and the webhook secret
 
-1. On startup, the app ensures the following custom fields exist in Zendesk:
-   - Ticket custom field: `teamwork_task_id`
-   - User custom field: `teamwork_user_id`
+---
 
-2. When a ticket is created or updated:
-   - If the `teamwork_task` tag is present:
-     - A task is created in Teamwork if it doesn't already exist.
-     - The task is assigned to the Zendesk agent’s mapped Teamwork user.
-     - The task ID is stored in the Zendesk ticket’s `teamwork_task_id` field.
-   - If the tag is removed, no updates are made to the task.
-   - If the tag is re-added and mapping exists, updates resume.
+## config.toml Format
 
-3. Ticket status drives task state:
-   - `solved` → task completed
-   - `reopened` → task reopened
-   - `closed` or deleted → task deleted
-   - `merged` → task marked complete, description updated
+The following TOML file is generated automatically by Helm and mounted into the container:
 
-## Running the App
+```toml
+[zendesk]
+subdomain = "your-subdomain"
 
-Install Python dependencies:
-
-```bash
-pip install -r requirements.txt
+[teamwork]
+domain = "your-teamwork-domain"
+project_id = "123456"
+task_list = "654321"

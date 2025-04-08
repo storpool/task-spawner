@@ -1,10 +1,10 @@
 import requests
+from requests.auth import HTTPBasicAuth
 
-def get_headers(config):
-    return {
-        "Authorization": f"Bearer {config['ZENDESK_API_TOKEN']}",
-        "Content-Type": "application/json"
-    }
+def get_auth(config):
+    email = config["ZENDESK_EMAIL"]
+    token = config["ZENDESK_API_TOKEN"]
+    return HTTPBasicAuth(f"{email}/token", token)
 
 def ensure_custom_fields(config):
     fields = get_ticket_fields(config)
@@ -17,11 +17,11 @@ def ensure_custom_fields(config):
 
 def get_ticket_fields(config):
     url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/ticket_fields.json"
-    return requests.get(url, headers=get_headers(config)).json()["ticket_fields"]
+    return requests.get(url, auth=get_auth(config)).json()["ticket_fields"]
 
 def get_user_fields(config):
     url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/user_fields.json"
-    return requests.get(url, headers=get_headers(config)).json()["user_fields"]
+    return requests.get(url, auth=get_auth(config)).json()["user_fields"]
 
 def create_ticket_field(config, name):
     url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/ticket_fields.json"
@@ -33,7 +33,7 @@ def create_ticket_field(config, name):
             "required": False
         }
     }
-    requests.post(url, headers=get_headers(config), json=payload)
+    requests.post(url, auth=get_auth(config), json=payload)
 
 def create_user_field(config, name):
     url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/user_fields.json"
@@ -44,11 +44,11 @@ def create_user_field(config, name):
             "key": name
         }
     }
-    requests.post(url, headers=get_headers(config), json=payload)
+    requests.post(url, auth=get_auth(config), json=payload)
 
 def get_teamwork_user_id(agent_id, config):
     user_url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/users/{agent_id}.json"
-    res = requests.get(user_url, headers=get_headers(config)).json()
+    res = requests.get(user_url, auth=get_auth(config)).json()
     user = res["user"]
     user_fields = user.get("user_fields", {})
 
@@ -60,7 +60,9 @@ def get_teamwork_user_id(agent_id, config):
     tw_id = find_teamwork_user_id_by_email(email, config)
 
     # Store back in Zendesk
-    set_teamwork_user_id(agent_id, tw_id, config)
+    if tw_id:
+        set_teamwork_user_id(agent_id, tw_id, config)
+
     return tw_id
 
 def set_teamwork_user_id(agent_id, teamwork_id, config):
@@ -72,11 +74,13 @@ def set_teamwork_user_id(agent_id, teamwork_id, config):
             }
         }
     }
-    requests.put(url, headers=get_headers(config), json=payload)
+    requests.put(url, auth=get_auth(config), json=payload)
 
 def find_teamwork_user_id_by_email(email, config):
     url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/people.json"
-    headers = { "Authorization": f"Bearer {config['TEAMWORK_API_TOKEN']}" }
+    headers = {
+        "Authorization": f"Bearer {config['TEAMWORK_API_TOKEN']}"
+    }
     people = requests.get(url, headers=headers).json()["people"]
     for person in people:
         if person["email"].lower() == email.lower():
@@ -102,7 +106,7 @@ def set_ticket_task_id(ticket_id, task_id, config):
             ]
         }
     }
-    requests.put(url, headers=get_headers(config), json=payload)
+    requests.put(url, auth=get_auth(config), json=payload)
 
 def get_task_id_field_id(config):
     fields = get_ticket_fields(config)
