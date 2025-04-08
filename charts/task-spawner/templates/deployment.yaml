@@ -17,6 +17,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
+            - "python"
+            - "run.py"
             - "--config-file=/etc/ticket-spawner/config.toml"
           ports:
             - containerPort: 5000

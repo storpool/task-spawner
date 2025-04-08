@@ -12,7 +12,7 @@ service:
 ingress:
   enabled: true
   className: ""
-  annotations: []
+  annotations: {}
   fqdn: task-spawner.example.com
   tls:
     enabled: true
