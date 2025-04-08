@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 import teamwork
 import zendesk
 import logging
@@ -6,9 +6,21 @@ import logging
 def create_app(config):
     app = Flask(__name__)
     zendesk.ensure_custom_fields(config)
+    webhook_secret = config["WEBHOOK_SECRET"]
 
     @app.route("/webhook", methods=["POST"])
     def webhook():
+        received_secret = request.headers.get("X-Zendesk-Webhook-Secret")
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+
+        if not received_secret:
+            logging.warning(f"Webhook request rejected (missing secret) from {client_ip}")
+            abort(403)
+
+        if received_secret != webhook_secret:
+            logging.warning(f"Webhook request rejected (invalid secret) from {client_ip}")
+            abort(403)
+
         event = request.json
         ticket = event.get("ticket")
         if not ticket:
