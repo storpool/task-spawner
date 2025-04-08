@@ -18,9 +18,6 @@ ingress:
   fqdn: ticket-spawner.example.com
   tlsSecretName: ticket-spawner-tls
 
-env:
-  redisSentinelMaster: mymaster
-
 secrets:
   zendeskSubdomain: ""
   zendeskApiToken: ""

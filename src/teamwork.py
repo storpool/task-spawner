@@ -1,5 +1,4 @@
 import requests
-import logging
 
 def get_headers(config):
     return {
@@ -7,35 +6,40 @@ def get_headers(config):
         "Content-Type": "application/json"
     }
 
-def create_task(title, teamwork_user_id, config):
-    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/projects/{config['TEAMWORK_PROJECT_ID']}/tasks.json"
-    payload = {
+def create_task(subject, ticket_number, teamwork_user_id, config):
+    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks.json"
+    task_name = f"[Ticket #{ticket_number}] {subject}"
+
+    data = {
         "todo-item": {
-            "content": title
+            "content": task_name,
+            "tasklist-id": config["TEAMWORK_TASK_LIST_ID"],
         }
     }
-    if teamwork_user_id:
-        payload["todo-item"]["responsible-party-id"] = teamwork_user_id
 
-    response = requests.post(url, json=payload, headers=get_headers(config))
+    if teamwork_user_id:
+        data["todo-item"]["responsible-party-id"] = teamwork_user_id
+
+    response = requests.post(url, json=data, headers=get_headers(config))
     response.raise_for_status()
-    task_id = response.json()["todo-item"]["id"]
-    logging.info(f"Created Teamwork task {task_id}")
-    return task_id
+    return response.json()["todo-item"]["id"]
 
 def update_task_status(task_id, completed, config):
     url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks/{task_id}.json"
-    payload = {
-        "todo-item": {
-            "completed": completed
-        }
-    }
-    response = requests.put(url, json=payload, headers=get_headers(config))
+    data = { "todo-item": { "completed": completed } }
+    response = requests.put(url, json=data, headers=get_headers(config))
     response.raise_for_status()
-    logging.info(f"Marked task {task_id} as {'complete' if completed else 'incomplete'}")
 
 def delete_task(task_id, config):
     url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks/{task_id}.json"
     response = requests.delete(url, headers=get_headers(config))
     response.raise_for_status()
-    logging.info(f"Deleted task {task_id}")
+
+def append_description(task_id, text, config):
+    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/tasks/{task_id}.json"
+    # First get the existing task description
+    task = requests.get(url, headers=get_headers(config)).json()["todo-item"]
+    new_description = (task.get("description") or "") + f"\n{text}"
+
+    data = { "todo-item": { "description": new_description } }
+    requests.put(url, json=data, headers=get_headers(config))

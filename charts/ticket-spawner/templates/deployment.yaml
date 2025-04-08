@@ -44,9 +44,3 @@ spec:
                 secretKeyRef:
                   name: ticket-spawner-secrets
                   key: TEAMWORK_PROJECT_ID
-            - name: REDIS_USE_SENTINEL
-              value: "true"
-            - name: REDIS_SENTINEL_MASTER
-              value: {{ .Values.env.redisSentinelMaster | quote }}
-            - name: REDIS_SENTINEL_HOSTS
-              value: "{{ include \"ticket-spawner.redis.fullname\" . }}-sentinel:26379"

@@ -1,79 +1,62 @@
 # Zendesk to Teamwork Synchronization Service
 
-This is a Python Flask application that listens to Zendesk ticket events and synchronizes them with Teamwork tasks. It is designed for use in containerized environments and supports Redis Sentinel for high availability.
+This application listens for Zendesk ticket events and synchronizes them with Teamwork tasks. All mapping and state are stored using Zendesk metadata. Redis is no longer used.
 
 ## Features
 
-- Creates a new Teamwork task when a new Zendesk ticket is created.
-- Assigns the task to the Zendesk agent who opened the ticket, if a user mapping exists.
-- If no agent mapping exists, the task is created with no assignee ("Anyone").
-- Updates the task title if the ticket title changes.
-- Updates the task assignee if the ticket is assigned or reassigned.
-- Tracks the status of the ticket:
-  - When a ticket is marked as **solved**, the Teamwork task is marked as complete.
-  - When a ticket is **reopened**, the task is marked as incomplete.
-  - When a ticket is **closed** or **deleted**, the task is deleted.
-  - When a ticket is **merged**, the task is marked as complete.
-- Stores ticket-to-task and user ID mappings in Redis.
-- Provides a CLI to manage user mappings.
-- Exposes a `/healthz` endpoint for readiness and liveness checks.
-- Can be run with direct Redis or Redis Sentinel.
+- **Task Creation**: Creates a Teamwork task when a new Zendesk ticket is created and contains the `teamwork_task` tag.
+- **Task Title**: Tasks are named using the pattern `[Ticket #1234] ticket title`.
+- **Assignee Mapping**: Tasks are assigned to the Teamwork user based on the Zendesk agent’s `teamwork_user_id` custom field.
+- **Task List**: Tasks are created in a configured Teamwork task list.
+- **Tag-based Sync**:
+  - If the `teamwork_task` tag is removed, task updates are paused.
+  - If the tag is re-added and the user has a `teamwork_user_id`, sync resumes.
+- **Status Sync**:
+  - `solved` → mark task complete
+  - `reopened` / `open` → mark task incomplete
+  - `closed` / `deleted` → delete the task
+  - `merged` → mark task complete and append `Merged into ticket #number` to the description
+- **Agent Mapping**: The application automatically maps Zendesk agents to Teamwork users by matching email addresses and writes the Teamwork user ID into the agent’s `teamwork_user_id` custom field.
+- **Metadata Storage**:
+  - Task ID is stored in `teamwork_task_id` custom field on the ticket.
+  - All required Zendesk custom fields are created automatically.
 
-## Helm Deployment Instructions
+## Configuration
 
-This application can be deployed using the provided Helm chart under `charts/ticket-spawner`.
+The app is configured via command-line arguments or environment variables.
 
-### Set Required Values
+| Description              | CLI Argument                     | Env Var                     | Required |
+|--------------------------|----------------------------------|-----------------------------|----------|
+| Zendesk subdomain        | `--zendesk-subdomain`            | `ZENDESK_SUBDOMAIN`         | ✅       |
+| Zendesk API token        | `--zendesk-api-token`            | `ZENDESK_API_TOKEN`         | ✅       |
+| Teamwork domain          | `--teamwork-domain`              | `TEAMWORK_DOMAIN`           | ✅       |
+| Teamwork API token       | `--teamwork-api-token`           | `TEAMWORK_API_TOKEN`        | ✅       |
+| Teamwork project ID      | `--teamwork-project-id`          | `TEAMWORK_PROJECT_ID`       | ✅       |
+| Teamwork task list ID    | `--teamwork-task-list-id`        | `TEAMWORK_TASK_LIST_ID`     | ✅       |
 
-Before installing the chart, you must provide sensitive credentials and configuration values. These are stored as a Kubernetes `Secret`.
+## How It Works
 
-Create a custom `values.yaml` file (e.g., `my-values.yaml`) with:
+1. On startup, the app ensures the following custom fields exist in Zendesk:
+   - Ticket custom field: `teamwork_task_id`
+   - User custom field: `teamwork_user_id`
 
-```yaml
-secrets:
-  zendeskSubdomain: your-zendesk-subdomain
-  zendeskApiToken: your-base64-encoded-zendesk-api-token
-  teamworkDomain: your-teamwork-domain
-  teamworkApiToken: your-base64-encoded-teamwork-api-token
-  teamworkProjectId: your-teamwork-project-id
+2. When a ticket is created or updated:
+   - If the `teamwork_task` tag is present:
+     - A task is created in Teamwork if it doesn't already exist.
+     - The task is assigned to the Zendesk agent’s mapped Teamwork user.
+     - The task ID is stored in the Zendesk ticket’s `teamwork_task_id` field.
+   - If the tag is removed, no updates are made to the task.
+   - If the tag is re-added and mapping exists, updates resume.
 
-ingress:
-  fqdn: ticket-spawner.yourdomain.com
-  tlsSecretName: ticket-spawner-tls
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-```
+3. Ticket status drives task state:
+   - `solved` → task completed
+   - `reopened` → task reopened
+   - `closed` or deleted → task deleted
+   - `merged` → task marked complete, description updated
 
-> **Note**: `zendeskApiToken` and `teamworkApiToken` must be base64-encoded, as they are inserted directly into a Kubernetes `Secret`.
+## Running the App
 
-### Install with Helm
+Install Python dependencies:
 
 ```bash
-helm upgrade --install ticket-spawner charts/ticket-spawner \
-  --namespace ticket-spawner --create-namespace \
-  -f my-values.yaml
-```
-
-This will:
-
-- Deploy the application with 2 replicas.
-- Deploy a Bitnami Redis Sentinel cluster.
-- Configure a Kubernetes Ingress.
-- Automatically issue a TLS certificate using CertManager.
-
-### Access the App
-
-Once deployed, your app will be accessible at the FQDN you specified (e.g., `https://ticket-spawner.yourdomain.com`), with TLS handled by CertManager.
-
-### Optional Settings
-
-| Setting                        | Description                                   | Default            |
-|-------------------------------|-----------------------------------------------|--------------------|
-| `ingress.enabled`             | Enable ingress resource                       | `true`             |
-| `ingress.tlsEnabled`          | Enable TLS for ingress                        | `true`             |
-| `replicaCount`                | Number of application pods                    | `2`                |
-| `env.redisSentinelMaster`     | Redis Sentinel master name                    | `mymaster`         |
-
-## License
-
-This project is open source and available under the MIT License.
+pip install -r requirements.txt
