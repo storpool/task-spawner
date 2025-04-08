@@ -20,9 +20,9 @@ spec:
                 name: ticket-spawner
                 port:
                   number: {{ .Values.service.port }}
-  {{- if .Values.ingress.tlsEnabled }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    - secretName: {{ .Values.ingress.tlsSecretName }}
+    - secretName: {{ .Values.ingress.tls.secretName }}
       hosts:
         - {{ .Values.ingress.fqdn }}
   {{- end }}

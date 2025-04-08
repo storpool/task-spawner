@@ -11,12 +11,13 @@ service:
 
 ingress:
   enabled: true
-  tlsEnabled: true
   className: ""
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  annotations: []
   fqdn: task-spawner.example.com
-  tlsSecretName: task-spawner-tls
+  tls:
+    enabled: true
+    secretName: task-spawner-tls
+    issuerName: letsencrypt-prod
 
 config:
   zendeskSubdomain: ""

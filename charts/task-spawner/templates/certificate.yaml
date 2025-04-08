@@ -1,12 +1,12 @@
-{{- if and .Values.ingress.enabled .Values.ingress.tlsEnabled }}
+{{- if and .Values.ingress.enabled .Values.ingress.tls.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: task-spawner-cert
 spec:
-  secretName: {{ .Values.ingress.tlsSecretName }}
+  secretName: {{ .Values.ingress.tls.secretName }}
   issuerRef:
-    name: {{ .Values.ingress.annotations."cert-manager.io/cluster-issuer" }}
+    name: {{ .Values.ingress.tls.issuerName }}
     kind: ClusterIssuer
   dnsNames:
     - {{ .Values.ingress.fqdn }}
