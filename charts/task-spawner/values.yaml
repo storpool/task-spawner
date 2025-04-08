@@ -1,5 +1,5 @@
 image:
-  repository: cts.storpool.com/ticket-spawner/release
+  repository: cts.storpool.com/task-spawner/release
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -15,8 +15,8 @@ ingress:
   className: ""
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  fqdn: ticket-spawner.example.com
-  tlsSecretName: ticket-spawner-tls
+  fqdn: task-spawner.example.com
+  tlsSecretName: task-spawner-tls
 
 secrets:
   zendeskSubdomain: ""

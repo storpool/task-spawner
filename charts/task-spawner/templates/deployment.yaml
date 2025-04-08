@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ticket-spawner
+  name: task-spawner
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: ticket-spawner
+      app: task-spawner
   template:
     metadata:
       labels:
-        app: ticket-spawner
+        app: task-spawner
     spec:
       containers:
-        - name: ticket-spawner
+        - name: task-spawner
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -22,25 +22,25 @@ spec:
             - name: ZENDESK_SUBDOMAIN
               valueFrom:
                 secretKeyRef:
-                  name: ticket-spawner-secrets
+                  name: task-spawner-secrets
                   key: ZENDESK_SUBDOMAIN
             - name: ZENDESK_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: ticket-spawner-secrets
+                  name: task-spawner-secrets
                   key: ZENDESK_API_TOKEN
             - name: TEAMWORK_DOMAIN
               valueFrom:
                 secretKeyRef:
-                  name: ticket-spawner-secrets
+                  name: task-spawner-secrets
                   key: TEAMWORK_DOMAIN
             - name: TEAMWORK_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: ticket-spawner-secrets
+                  name: task-spawner-secrets
                   key: TEAMWORK_API_TOKEN
             - name: TEAMWORK_PROJECT_ID
               valueFrom:
                 secretKeyRef:
-                  name: ticket-spawner-secrets
+                  name: task-spawner-secrets
                   key: TEAMWORK_PROJECT_ID

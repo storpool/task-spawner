@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ticket-spawner
+  name: task-spawner
   labels:
-    app: ticket-spawner
+    app: task-spawner
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: 5000
   selector:
-    app: ticket-spawner
+    app: task-spawner

@@ -1,9 +1,9 @@
 # Image name and tag
-IMAGE_NAME=cts.storpool.com/ticket-spawner/release
+IMAGE_NAME=cts.storpool.com/task-spawner/release
 TAG=latest
 
 # Helm chart directory
-HELM_CHART = charts/ticket-spawner
+HELM_CHART = charts/task-spawner
 
 # Docker build context
 CONTEXT=.
