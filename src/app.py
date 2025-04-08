@@ -54,15 +54,15 @@ def create_app(config):
             event_type = event.get("event_type", "")
 
             if status == "solved":
-                teamwork.update_task_status(task_id, True, config)
+                teamwork.complete_task(task_id, config)
             elif status in ("open", "reopened"):
-                teamwork.update_task_status(task_id, False, config)
+                teamwork.reopen_task(task_id, config)
             elif status == "closed" or event_type == "deleted":
                 teamwork.delete_task(task_id, config)
             elif event_type == "merged":
-                teamwork.update_task_status(task_id, True, config)
                 merged_into = event.get("merged_into_ticket_id", "unknown")
-                teamwork.append_description(task_id, f"Merged into ticket {merged_into}", config)
+                teamwork.append_to_task_description(task_id, f"Merged into ticket {merged_into}", config)
+                teamwork.complete_task(task_id, config)
 
         return jsonify({"ok": True}), 200
 
