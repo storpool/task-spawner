@@ -1,0 +1,11 @@
+apiVersion: v2
+name: ticket-spawner
+version: 0.1.0
+description: A Helm chart to deploy the Zendesk-to-Teamwork sync application with Redis Sentinel and CertManager-enabled Ingress.
+type: application
+
+dependencies:
+  - name: redis
+    version: 18.3.2
+    repository: https://charts.bitnami.com/bitnami
+    alias: redis

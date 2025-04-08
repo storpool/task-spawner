@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-spawner
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: ticket-spawner
+  template:
+    metadata:
+      labels:
+        app: ticket-spawner
+    spec:
+      containers:
+        - name: ticket-spawner
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 5000
+          env:
+            - name: ZENDESK_SUBDOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: ZENDESK_SUBDOMAIN
+            - name: ZENDESK_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: ZENDESK_API_TOKEN
+            - name: TEAMWORK_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: TEAMWORK_DOMAIN
+            - name: TEAMWORK_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: TEAMWORK_API_TOKEN
+            - name: TEAMWORK_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-spawner-secrets
+                  key: TEAMWORK_PROJECT_ID
+            - name: REDIS_USE_SENTINEL
+              value: "true"
+            - name: REDIS_SENTINEL_MASTER
+              value: {{ .Values.env.redisSentinelMaster | quote }}
+            - name: REDIS_SENTINEL_HOSTS
+              value: "{{ include \"ticket-spawner.redis.fullname\" . }}-sentinel:26379"

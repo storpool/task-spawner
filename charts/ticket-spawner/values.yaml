@@ -1,0 +1,29 @@
+image:
+  repository: cts.storpool.com/ticket-spawner/release
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: true
+  tlsEnabled: true
+  className: ""
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  fqdn: ticket-spawner.example.com
+  tlsSecretName: ticket-spawner-tls
+
+env:
+  redisSentinelMaster: mymaster
+
+secrets:
+  zendeskSubdomain: ""
+  zendeskApiToken: ""
+  teamworkDomain: ""
+  teamworkApiToken: ""
+  teamworkProjectId: ""

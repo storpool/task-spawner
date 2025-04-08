@@ -19,48 +19,61 @@ This is a Python Flask application that listens to Zendesk ticket events and syn
 - Exposes a `/healthz` endpoint for readiness and liveness checks.
 - Can be run with direct Redis or Redis Sentinel.
 
-## Configuration
+## Helm Deployment Instructions
 
-The application accepts both command-line arguments and environment variables for configuration. Environment variables take precedence.
+This application can be deployed using the provided Helm chart under `charts/ticket-spawner`.
 
-### Required Configuration
+### Set Required Values
 
-| Description                | CLI Argument                      | Environment Variable           |
-|----------------------------|-----------------------------------|--------------------------------|
-| Zendesk subdomain          | `--zendesk-subdomain`             | `ZENDESK_SUBDOMAIN`            |
-| Zendesk API token          | `--zendesk-api-token`             | `ZENDESK_API_TOKEN`            |
-| Teamwork domain            | `--teamwork-domain`               | `TEAMWORK_DOMAIN`              |
-| Teamwork API token         | `--teamwork-api-token`            | `TEAMWORK_API_TOKEN`           |
-| Teamwork project ID        | `--teamwork-project-id`           | `TEAMWORK_PROJECT_ID`          |
+Before installing the chart, you must provide sensitive credentials and configuration values. These are stored as a Kubernetes `Secret`.
 
-### Redis Configuration (Standalone)
+Create a custom `values.yaml` file (e.g., `my-values.yaml`) with:
 
-| Description        | CLI Argument           | Environment Variable   | Default    |
-|--------------------|------------------------|-------------------------|------------|
-| Redis host         | `--redis-host`         | `REDIS_HOST`            | `localhost`|
-| Redis port         | `--redis-port`         | `REDIS_PORT`            | `6379`     |
-| Redis database     | `--redis-db`           | `REDIS_DB`              | `0`        |
+```yaml
+secrets:
+  zendeskSubdomain: your-zendesk-subdomain
+  zendeskApiToken: your-base64-encoded-zendesk-api-token
+  teamworkDomain: your-teamwork-domain
+  teamworkApiToken: your-base64-encoded-teamwork-api-token
+  teamworkProjectId: your-teamwork-project-id
 
-### Redis Configuration (Sentinel Mode)
+ingress:
+  fqdn: ticket-spawner.yourdomain.com
+  tlsSecretName: ticket-spawner-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+```
 
-| Description              | CLI Argument                  | Environment Variable           | Default     |
-|--------------------------|-------------------------------|----------------------------------|-------------|
-| Use Redis Sentinel       | `--redis-use-sentinel`        | `REDIS_USE_SENTINEL`             | false       |
-| Sentinel hosts           | `--redis-sentinel-hosts`      | `REDIS_SENTINEL_HOSTS`           |             |
-| Sentinel master name     | `--redis-sentinel-master`     | `REDIS_SENTINEL_MASTER`          | `mymaster`  |
+> **Note**: `zendeskApiToken` and `teamworkApiToken` must be base64-encoded, as they are inserted directly into a Kubernetes `Secret`.
 
-## Running the Application
-
-Example using CLI and environment variables:
+### Install with Helm
 
 ```bash
-export ZENDESK_API_TOKEN=your_zendesk_token
-export TEAMWORK_API_TOKEN=your_teamwork_token
+helm upgrade --install ticket-spawner charts/ticket-spawner \
+  --namespace ticket-spawner --create-namespace \
+  -f my-values.yaml
+```
 
-python run.py \
-  --zendesk-subdomain=mycompany \
-  --teamwork-domain=myteam \
-  --teamwork-project-id=987654 \
-  --redis-use-sentinel \
-  --redis-sentinel-hosts=redis-0:26379,redis-1:26379 \
-  --redis-sentinel-master=mymaster
+This will:
+
+- Deploy the application with 2 replicas.
+- Deploy a Bitnami Redis Sentinel cluster.
+- Configure a Kubernetes Ingress.
+- Automatically issue a TLS certificate using CertManager.
+
+### Access the App
+
+Once deployed, your app will be accessible at the FQDN you specified (e.g., `https://ticket-spawner.yourdomain.com`), with TLS handled by CertManager.
+
+### Optional Settings
+
+| Setting                        | Description                                   | Default            |
+|-------------------------------|-----------------------------------------------|--------------------|
+| `ingress.enabled`             | Enable ingress resource                       | `true`             |
+| `ingress.tlsEnabled`          | Enable TLS for ingress                        | `true`             |
+| `replicaCount`                | Number of application pods                    | `2`                |
+| `env.redisSentinelMaster`     | Redis Sentinel master name                    | `mymaster`         |
+
+## License
+
+This project is open source and available under the MIT License.

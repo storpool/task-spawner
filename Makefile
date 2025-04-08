@@ -2,6 +2,9 @@
 IMAGE_NAME=cts.storpool.com/ticket-spawner/release
 TAG=latest
 
+# Helm chart directory
+HELM_CHART = charts/ticket-spawner
+
 # Docker build context
 CONTEXT=.
 
@@ -19,3 +22,12 @@ clean:
 
 # Rebuild and push
 release: clean push
+
+helm-lint:
+	helm lint $(HELM_CHART)
+
+helm-template:
+	helm template $(HELM_CHART)
+
+helm-upgrade:
+	helm upgrade --install ticket-spawner $(HELM_CHART) -f $(HELM_CHART)/values.yaml --namespace ticket-spawner --create-namespace

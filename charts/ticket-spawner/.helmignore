@@ -1,0 +1,5 @@
+# charts/ticket-spawner/.helmignore
+.DS_Store
+.git/
+*.md
+*.tgz
