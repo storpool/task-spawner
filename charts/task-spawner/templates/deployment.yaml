@@ -20,7 +20,7 @@ spec:
             - containerPort: 5000
           volumeMounts:
             - name: config-volume
-              mountPath: /app/
+              mountPath: /etc/task-spawner/
               readOnly: true
           env:
             - name: ZENDESK_EMAIL

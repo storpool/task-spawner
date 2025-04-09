@@ -11,7 +11,7 @@ except ImportError:
 def get_config():
     parser = argparse.ArgumentParser(description="Zendesk → Teamwork Sync Service")
 
-    parser.add_argument("--config-file", default="config.toml", help="Path to TOML config file")
+    parser.add_argument("--config-file", default="/etc/task-spawner/config.toml", help="Path to TOML config file")
     parser.add_argument("--zendesk-email", help="Zendesk user email (used with API token)")
     parser.add_argument("--zendesk-api-token", help="Zendesk API token")
     parser.add_argument("--teamwork-api-token", help="Teamwork API token")
