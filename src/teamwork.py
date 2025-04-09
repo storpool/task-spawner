@@ -23,7 +23,7 @@ def validate_task_list_exists(config):
         raise ValueError("TEAMWORK_PROJECT_ID and TEAMWORK_TASK_LIST_ID must be set in config")
 
     url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/projects/{project_id}/tasklists.json"
-    response = requests.get(url, auth=get_auth(config))
+    response = requests.get(url, auth=get_auth(config), params={"status": "all"})
     response.raise_for_status()
 
     tasklists = response.json().get("tasklists", [])
