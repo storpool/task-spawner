@@ -12,6 +12,29 @@ def get_base_url(config):
     return f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com"
 
 
+def validate_task_list_exists(config):
+    """
+    Checks if the configured Teamwork task list exists in the project.
+    Raises an exception if not found.
+    """
+    project_id = config.get("TEAMWORK_PROJECT_ID")
+    task_list_id = config.get("TEAMWORK_TASK_LIST_ID")
+    if not project_id or not task_list_id:
+        raise ValueError("TEAMWORK_PROJECT_ID and TEAMWORK_TASK_LIST_ID must be set in config")
+
+    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/projects/{project_id}/tasklists.json"
+    response = requests.get(url, auth=get_auth(config))
+    response.raise_for_status()
+
+    tasklists = response.json().get("tasklists", [])
+    for tasklist in tasklists:
+        if str(tasklist["id"]) == str(task_list_id):
+            logging.info(f"Validated Teamwork task list {task_list_id} exists.")
+            return
+
+    raise ValueError(f"Task list ID {task_list_id} not found in project {project_id}")
+
+
 def create_task(title, ticket_number, teamwork_user_id, config):
     url = f"{get_base_url(config)}/tasklists/{config['TEAMWORK_TASK_LIST']}/tasks.json"
     payload = {

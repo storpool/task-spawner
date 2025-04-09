@@ -1,6 +1,6 @@
 image:
   repository: cts.storpool.com/task-spawner/release
-  tag: v0.1.0
+  tag: v0.1.1
   pullPolicy: IfNotPresent
 
 replicaCount: 2
