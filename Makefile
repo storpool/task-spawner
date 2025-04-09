@@ -8,6 +8,9 @@ HELM_CHART = charts/task-spawner
 # Docker build context
 CONTEXT=.
 
+run-dev:
+	FLASK_ENV=development python run.py
+
 # Build the Docker image
 build:
 	docker build -t $(IMAGE_NAME):$(TAG) $(CONTEXT)

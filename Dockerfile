@@ -1,14 +1,17 @@
 FROM python:3.11-slim
 
-# Set working directory to app source
+# Set working directory
 WORKDIR /app
 
-# Copy only application code, not Helm chart
-COPY src/ /app/
-
-# Install dependencies
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set default command
-CMD ["python", "run.py"]
+# Copy source code
+COPY src/ /app/
+
+# Expose port
+EXPOSE 5000
+
+# Run with Gunicorn in production
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "run:app", "--workers=4", "--threads=2"]

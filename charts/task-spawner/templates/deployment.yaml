@@ -16,15 +16,11 @@ spec:
         - name: task-spawner
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args:
-            - "python"
-            - "run.py"
-            - "--config-file=/etc/ticket-spawner/config.toml"
           ports:
             - containerPort: 5000
           volumeMounts:
             - name: config-volume
-              mountPath: /etc/ticket-spawner/
+              mountPath: /app/
               readOnly: true
           env:
             - name: ZENDESK_EMAIL
