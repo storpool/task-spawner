@@ -36,7 +36,7 @@ def get_config():
         "TEAMWORK_DOMAIN": toml_data.get("teamwork", {}).get("domain"),
         "TEAMWORK_API_TOKEN": os.getenv("TEAMWORK_API_TOKEN", args.teamwork_api_token),
         "TEAMWORK_PROJECT_ID": toml_data.get("teamwork", {}).get("project_id"),
-        "TEAMWORK_TASK_LIST": toml_data.get("teamwork", {}).get("task_list"),
+        "TEAMWORK_TASK_LIST_ID": toml_data.get("teamwork", {}).get("task_list_id"),
         "WEBHOOK_SECRET": os.getenv("ZENDESK_WEBHOOK_SECRET", args.webhook_secret),
     }
 
@@ -47,7 +47,7 @@ def get_config():
         "TEAMWORK_DOMAIN",
         "TEAMWORK_API_TOKEN",
         "TEAMWORK_PROJECT_ID",
-        "TEAMWORK_TASK_LIST",
+        "TEAMWORK_TASK_LIST_ID",
         "WEBHOOK_SECRET"
     ]
 

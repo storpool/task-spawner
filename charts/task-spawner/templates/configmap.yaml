@@ -10,4 +10,4 @@ data:
     [teamwork]
     domain = "{{ .Values.config.teamworkDomain }}"
     project_id = "{{ .Values.config.teamworkProjectId }}"
-    task_list = "{{ .Values.config.teamworkTaskList }}"
+    task_list_id = "{{ .Values.config.teamworkTaskListId }}"
