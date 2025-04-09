@@ -4,6 +4,9 @@ metadata:
   name: ticket-spawner-config
 data:
   config.toml: |
+    [logging]
+    level = "{{ .Values.config.logging.level }}"
+
     [zendesk]
     subdomain = "{{ .Values.config.zendeskSubdomain }}"
 

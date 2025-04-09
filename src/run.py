@@ -7,6 +7,10 @@ import teamwork
 # Load configuration
 config = get_config()
 
+# Set logging level from config
+log_level = config.get("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
+
 # Validate that the task list exists in Teamwork
 try:
     teamwork.validate_task_list_exists(config)

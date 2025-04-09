@@ -38,6 +38,7 @@ def get_config():
         "TEAMWORK_PROJECT_ID": toml_data.get("teamwork", {}).get("project_id"),
         "TEAMWORK_TASK_LIST_ID": toml_data.get("teamwork", {}).get("task_list_id"),
         "WEBHOOK_SECRET": os.getenv("ZENDESK_WEBHOOK_SECRET", args.webhook_secret),
+        "LOG_LEVEL": os.getenv("LOG_LEVEL", toml_data.get("logging", {}).get("level")),
     }
 
     required_keys = [

@@ -24,6 +24,8 @@ config:
   teamworkDomain: ""
   teamworkProjectId: ""
   teamworkTaskListId: ""
+  logging:
+    level: info
 
 secrets:
   zendeskEmail: ""
