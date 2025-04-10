@@ -101,6 +101,6 @@ def set_ticket_task_id(ticket_id, task_id, config):
 def get_task_id_field_id(config):
     fields = get_ticket_fields(config)
     for field in fields:
-        if field["key"] == "teamwork_task_id":
+        if field["title"] == "teamwork_task_id":
             return field["id"]
     raise Exception("Custom field 'teamwork_task_id' not found.")
