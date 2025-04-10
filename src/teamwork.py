@@ -48,7 +48,7 @@ def create_task(title, ticket_number, teamwork_user_id, config):
 
     response = requests.post(url, json=payload, auth=get_auth(config))
     response.raise_for_status()
-    task_id = response.json()["todo-item"]["id"]
+    task_id = response.json()["id"]
     logging.info(f"Created Teamwork task {task_id} in list {config['TEAMWORK_TASK_LIST_ID']}")
     return task_id
 
