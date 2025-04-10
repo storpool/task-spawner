@@ -32,7 +32,7 @@ def create_app(config):
 
         ticket_number = str(ticket["id"])
         subject = ticket["subject"]
-        status = ticket["status"]
+        status = ticket["status"].lower()
         assignee_id = ticket.get("assignee_id")
         tags = ticket.get("tags", [])
 
