@@ -44,11 +44,16 @@ def create_app(config):
             logging.info(f"Ticket {ticket_number} does not have teamwork_task tag. Ignoring.")
             return jsonify({"skipped": "no tag"}), 200
 
+        logging.debug(f"Ticket {ticket_number} has teamwork_task tag. Proceeding with processing.")
+
         teamwork_user_id = None
         if assignee_id:
+            logging.debug(f"Ticket has an assignee, fetching Teamwork user ID")
             teamwork_user_id = zendesk.get_teamwork_user_id(assignee_id, config)
+            logging.debug(f"Found Teamwork user ID: {teamwork_user_id}")
 
         if not task_id:
+            logging.debug(f"Creating new Teamwork task for ticket {ticket_number}")
             task_id = teamwork.create_task(subject, ticket_number, teamwork_user_id, config)
             zendesk.set_ticket_task_id(ticket_number, task_id, config)
             logging.info(f"Created Teamwork task {task_id} for ticket {ticket_number}")
