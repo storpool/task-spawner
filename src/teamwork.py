@@ -122,3 +122,13 @@ def append_to_task_description(task_id, text, config):
     response = requests.put(url, json=payload, auth=get_auth(config))
     response.raise_for_status()
     logging.info(f"Updated Teamwork task {task_id} description")
+
+def find_teamwork_user_id_by_email(email, config):
+    url = f"{get_base_url(config)}/people.json"
+    response = requests.get(url, auth=get_auth(config))
+    response.raise_for_status()
+    people = response.json()["people"]
+    for person in people:
+        if person["email-address"].lower() == email.lower():
+            return str(person["id"])
+    return None

@@ -1,5 +1,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
+from teamwork import find_teamwork_user_id_by_email
 
 def get_auth(config):
     email = config["ZENDESK_EMAIL"]
@@ -75,17 +76,6 @@ def set_teamwork_user_id(agent_id, teamwork_id, config):
         }
     }
     requests.put(url, auth=get_auth(config), json=payload)
-
-def find_teamwork_user_id_by_email(email, config):
-    url = f"https://{config['TEAMWORK_DOMAIN']}.teamwork.com/people.json"
-    headers = {
-        "Authorization": f"Bearer {config['TEAMWORK_API_TOKEN']}"
-    }
-    people = requests.get(url, headers=headers).json()["people"]
-    for person in people:
-        if person["email"].lower() == email.lower():
-            return str(person["id"])
-    return None
 
 def get_ticket_task_id(ticket, config):
     for f in ticket.get("custom_fields", []):

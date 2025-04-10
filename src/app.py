@@ -50,6 +50,9 @@ def create_app(config):
         if assignee_id:
             logging.debug(f"Ticket has an assignee, fetching Teamwork user ID")
             teamwork_user_id = zendesk.get_teamwork_user_id(assignee_id, config)
+            if not teamwork_user_id:
+                logging.warning(f"Assignee ID {assignee_id} does not have a corresponding Teamwork user ID. Ignoring.")
+                return jsonify({"skipped": "no teamwork user id"}), 200
             logging.debug(f"Found Teamwork user ID: {teamwork_user_id}")
 
         if not task_id:
