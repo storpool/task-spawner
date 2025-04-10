@@ -17,7 +17,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ticket-spawner
+                name: task-spawner
                 port:
                   number: {{ .Values.service.port }}
   {{- if .Values.ingress.tls.enabled }}
