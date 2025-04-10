@@ -36,7 +36,7 @@ def validate_task_list_exists(config):
 
 
 def create_task(title, ticket_number, teamwork_user_id, config):
-    url = f"{get_base_url(config)}/tasklists/{config['TEAMWORK_TASK_LIST']}/tasks.json"
+    url = f"{get_base_url(config)}/tasklists/{config['TEAMWORK_TASK_LIST_ID']}/tasks.json"
     payload = {
         "todo-item": {
             "content": f"[Ticket #{ticket_number}] {title}",
@@ -49,7 +49,7 @@ def create_task(title, ticket_number, teamwork_user_id, config):
     response = requests.post(url, json=payload, auth=get_auth(config))
     response.raise_for_status()
     task_id = response.json()["todo-item"]["id"]
-    logging.info(f"Created Teamwork task {task_id} in list {config['TEAMWORK_TASK_LIST']}")
+    logging.info(f"Created Teamwork task {task_id} in list {config['TEAMWORK_TASK_LIST_ID']}")
     return task_id
 
 
