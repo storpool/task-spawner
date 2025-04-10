@@ -55,7 +55,7 @@ def create_app(config):
                 return jsonify({"skipped": "no teamwork user id"}), 200
             logging.debug(f"Found Teamwork user ID: {teamwork_user_id}")
 
-        if not task_id:
+        if not task_id and status not in ("solved", "closed"):
             logging.debug(f"Creating new Teamwork task for ticket {ticket_number}")
             task_id = teamwork.create_task(subject, ticket_number, teamwork_user_id, config)
             zendesk.set_ticket_task_id(ticket_number, task_id, config)
