@@ -77,7 +77,10 @@ def set_teamwork_user_id(agent_id, teamwork_id, config):
     }
     requests.put(url, auth=get_auth(config), json=payload)
 
-def get_ticket_task_id(ticket, config):
+def get_ticket_task_id(ticket_id, config):
+    url = f"https://{config['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/tickets/{ticket_id}.json"
+    res = requests.get(url, auth=get_auth(config)).json()
+    ticket = res["ticket"]
     for f in ticket.get("custom_fields", []):
         if f["id"] and f["id"] == get_task_id_field_id(config):
             return f["value"]

@@ -38,7 +38,7 @@ def create_app(config):
 
         logging.debug(f"Processing ticket {ticket_number} with status: {status}")
 
-        task_id = zendesk.get_ticket_task_id(ticket, config)
+        task_id = zendesk.get_ticket_task_id(ticket_number, config)
 
         if not "teamwork_task" in tags:
             logging.info(f"Ticket {ticket_number} does not have teamwork_task tag. Ignoring.")
